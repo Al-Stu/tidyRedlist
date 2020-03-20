@@ -97,9 +97,14 @@ tidyConcat <- function(species_data){
   name <- c('systems','realm','redlistCriteria')
   columns <- dplyr::select(species_data[['assessments']],all_of(name))
   species_data[['assessments']] <- dplyr::select(species_data[['assessments']],-all_of(name))
-  species_data <- c(species_data,
-                    splitToTidy(columns = columns,IDs = internalTaxonId,pattern = c('[|]','[|]',';'),name = name))
-  species_data[['redlistCriteria']] <- tidyCriteria(species_data[['redlistCriteria']])
+  species_data <- species_data %>%
+    c(splitToTidy(columns = columns,
+      IDs = internalTaxonId,
+      pattern = c('[|]','[|]',';'),
+      name = name)) %>%
+    addTaxonId() %>%
+    tidyCredits() %>%
+    tidyCriteria()
 }
 
 

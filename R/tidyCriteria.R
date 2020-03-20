@@ -12,7 +12,8 @@
 #' @examples
 #' tidyCriteria(species_data[['redlistCriteria']])
 #' @section Used in: \code{\link{tidyConcat}}
-tidyCriteria <- function(redCriteria){
+tidyCriteria <- function(species_data){
+  redCriteria <- species_data$redlistCriteria
   check_col_titles <- any(grepl('redlistCriteria',colnames(redCriteria))) &
     any(grepl('internalTaxonId',colnames(redCriteria))) &
     any(grepl('scientificName',colnames(redCriteria)))
@@ -21,19 +22,21 @@ tidyCriteria <- function(redCriteria){
          internalTaxonId and scientificName as in raw Redlist data')
   }
   redCriteria$internalTaxonId <- as.character(redCriteria$internalTaxonId)
-  to_columns <- criteriaToColumns(redCriteria$redlistCriteria,'[+]','^.','[0-9].*$')
-  to_columns_pivot <-  pivotToColumns(redCriteria,to_columns)
-  l2_to_columns <- criteriaToColumnsl2(input = to_columns_pivot$criterion,pattern = '')
-  l2_to_columns_pivot <-  pivotToColumns(to_columns_pivot,l2_to_columns)
-  l3_to_columns <- splitToColumns(l2_to_columns_pivot$criterion,pattern = '') %>%
-    dplyr::bind_cols(l2_to_columns_pivot[,1]) %>%
-    dplyr::right_join(redCriteria[,c(1,2)]) %>%
+  l1_to_column <- criteriaToColumns(redCriteria$redlistCriteria,'[+]','^.','[0-9].*$') %>%
+    pivotToColumns(redCriteria = redCriteria)
+  l2_to_column <- l1_to_column %>%
+    dplyr::select(`redlistCriteria`) %>%
+    criteriaToColumnsL2() %>%
+    pivotToColumns(redCriteria = l1_to_column)
+  l3_to_columns <- splitToColumns(l2_to_column$redlistCriteria,pattern = '') %>%
+    dplyr::bind_cols(l2_to_column[,-3]) %>%
     dplyr::select(`internalTaxonId`,`scientificName`, everything()) %>%
-    dplyr::rename(level1=`V1`,
-                  level2=`V2`,
-                  level3=`V3`) %>%
-    dplyr::filter(!is.na(`level1`))
-  return(l3_to_columns)
+    dplyr::rename(level1 = `V1`,
+                  level2 = `V2`,
+                  level3 = `V3`,
+                  level4 = `level`)
+  species_data[['redlistCriteria']] <- l3_to_columns
+  return(species_data)
 }
 
 #' Formats a string of criteria of the same level 1 to one criterion per row
@@ -55,7 +58,8 @@ criteriaToColumns <- function(input,pattern,firstHalf,secondHalf){
     splitToColumns(pattern = pattern) %>%
     dplyr::mutate(letter = stringr::str_extract(V1,firstHalf),
                   V1 = stringr::str_extract(V1,secondHalf)) %>%
-    pasteLastToAll()
+    pasteLastToAll() %>%
+    dplyr::select(-letter)
   return(to_columns)
 }
 
@@ -68,10 +72,17 @@ criteriaToColumns <- function(input,pattern,firstHalf,secondHalf){
 #' @section Used in: \code{\link{tidyCriteria}}
 #'
 criteriaToColumnsL2 <- function(input){
-  to_columns <- input %>%
-    splitToColumns(pattern = '') %>%
+  split_bracket <- input %>%
+    splitToColumns(pattern = '[(]') %>%
+    dplyr::mutate(V2 = `V2` %>%
+                    strSplitSelect('[)]',1)
+                  )
+  to_columns <- split_bracket %>%
+    dplyr::select(`V1`) %>%
+    splitToColumns('') %>%
     tidyr::unite(col='letter',`V1`,`V2`,sep='') %>%
-    pasteFirstToAll()
+    pasteFirstToAll() %>%
+    dplyr::mutate(level = split_bracket$V2)
   return(to_columns[,-1])
 }
 
@@ -88,12 +99,26 @@ criteriaToColumnsL2 <- function(input){
 #' criteriaToColumnsL2(resultFromPivotToColumns$redlistCriteria)
 #' @section Used in: \code{\link{tidyCriteria}}
 #'
-pivotToColumns <- function(redCriteria,splitCriteria){
-  dplyr::bind_cols(splitCriteria[,-ncol(splitCriteria)], redCriteria[,1]) %>%
-    dplyr::mutate(internalTaxonId = as.character(internalTaxonId)) %>%
-    tidyr::pivot_longer(-`internalTaxonId`, values_to = 'criterion') %>%
-    dplyr::select(c(`internalTaxonId`, `criterion`)) %>%
-    dplyr::filter(!is.na(`criterion`))
+# pivotToColumns <- function(splitCriteria,redCriteria){
+#   dplyr::bind_cols(splitCriteria[,-ncol(splitCriteria)], redCriteria[,1]) %>%
+#     dplyr::mutate(internalTaxonId = as.character(internalTaxonId)) %>%
+#     tidyr::pivot_longer(-`internalTaxonId`, values_to = 'criterion') %>%
+#     dplyr::select(c(`internalTaxonId`, `criterion`)) %>%
+#     dplyr::filter(!is.na(`criterion`))
+# }
+#
+pivotToColumns <- function(splitCriteria,redCriteria){
+  df <- dplyr::bind_cols(splitCriteria, redCriteria[,c(1,2)])
+  v_columns <- grepl('V',colnames(df))
+  to_pivot <- tidyr::unite(data = df[,v_columns],
+                           col = 'redlistCriteria',
+                           sep='|',
+                           na.rm = TRUE) %>%
+    dplyr::bind_cols(df[,!v_columns]) %>%
+    tidyr::separate_rows(`redlistCriteria`, sep = '[|]') %>%
+    dplyr::select(`internalTaxonId`,`scientificName`,`redlistCriteria`,dplyr::everything()) %>%
+    dplyr::filter(`redlistCriteria`!='')
+  return(to_pivot)
 }
 
 #' Pastes the value in the last column of each row in front of each value in that row
