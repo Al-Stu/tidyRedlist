@@ -1,0 +1,21 @@
+Package: tidyRedlist
+Title: Convert IUCN Redlist Downloads to Tidy Data
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Alice",
+           family = "Stuart",
+           role = c("aut", "cre"),
+           email = "alice.stuart.98@gmail.com",
+           comment = c(ORCID = "https://orcid.org/0000-0001-5208-8030"))
+Description: This package allows you to convert all IUCN Redlist data into easily analysable tibbles.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    tidyr,
+    tm
+Suggests:
+    rio,
+    testthat (>= 2.1.0)
+RoxygenNote: 7.0.2
