@@ -12,10 +12,12 @@
 
 tidySpeciesData <- function(species_data){
   species_data <- species_data %>%
+    taxonIdToChar() %>%
     addTaxonId() %>%
     tidyAssessments() %>%
-    tidyConcat %>%
-    tidyNames()
+    tidyConcat() %>%
+    tidyNames() %>%
+    removeNA()
   return(species_data)
 }
 
@@ -35,10 +37,7 @@ tidySpeciesData <- function(species_data){
 #' @examples
 #' tidyCriteria(species_data[['redlistCriteria']])
 addTaxonId <- function(species_data){
-  if(any(grepl('species_assessments',names(species_data)))){
-    result <- sapply(species_data, function(x) dplyr::right_join(x,
-        dplyr::select(species_data[['species_assessments']],`internalTaxonId`,`scientificName`)))
-  } else if(any(grepl('assessments',names(species_data)))){
+    if(any(grepl('assessments',names(species_data)))){
     result <- sapply(species_data, function(x) dplyr::right_join(x,
         dplyr::select(species_data[['assessments']],`internalTaxonId`,`scientificName`)))
   } else {
@@ -83,28 +82,38 @@ tidyAssessments <- function(species_data){
   return(species_data)
 }
 
-#' Splits all columns with concatenated observations into tidy tibbles
+#' Converts all instances of \code{internalTaxonId} to \code{\link{as.character}}
 #'
 #' @param species_data a tibble of data downloaded from an IUCN Redlist search
 #' and imported using \code{\link{importList}}
-#' @return \code{species_data} with tidy tibbles for systems, realms and
-#' redlistCriteria and removes these columns from assessments
 #' @examples
-#' tidyConcat(species_data)
+#' taxonIdToChar(species_data)
 #' @section Used in: \code{\link{tidySpeciesData}}
-tidyConcat <- function(species_data){
-  internalTaxonId <- species_data[['assessments']]$internalTaxonId
-  name <- c('systems','realm','redlistCriteria')
-  columns <- dplyr::select(species_data[['assessments']],all_of(name))
-  species_data[['assessments']] <- dplyr::select(species_data[['assessments']],-all_of(name))
-  species_data <- species_data %>%
-    c(splitToTidy(columns = columns,
-      IDs = internalTaxonId,
-      pattern = c('[|]','[|]',';'),
-      name = name)) %>%
-    addTaxonId() %>%
-    tidyCredits() %>%
-    tidyCriteria()
+taxonIdToChar <- function(species_data){
+  for(i in 1:length(species_data)){
+    taxon_id <- grepl('internalTaxonId',colnames(species_data[[i]]))
+    if(any(taxon_id)){
+      species_data[[i]] <- dplyr::mutate(species_data[[i]],
+                                         internalTaxonId = `internalTaxonId` %>%
+                                           as.character())
+    }
+  }
+  return(species_data)
 }
 
-
+#' Removes rows containing \code{NA} in all but two columns
+#'
+#' @param species_data a tibble of data downloaded from an IUCN Redlist search
+#' and imported using \code{\link{importList}}
+#' @examples
+#' removeNA(species_data)
+#' @section Used in: \code{\link{tidySpeciesData}}
+removeNA <- function(species_data){
+  list <- list()
+    for(i in 1:length(species_data)){
+      name <- names(species_data)[i]
+      list[[name]] <- species_data[[i]] %>%
+        dplyr::filter(rowSums(is.na(.)) != (ncol(.)-2))
+    }
+  return(list)
+}

@@ -4,8 +4,8 @@
 
 #' Formats \code{redlistCriteria} into tidy data
 #'
-#' @param redCriteria a tibble with \code{redlistCriteria}, \code{internalTaxonId}
-#' and \code{scientificName}.
+#' @param species_data a tibble of data downloaded from an IUCN Redlist search
+#' and imported using \code{\link{importList}}
 #' @return Tibble with each species-criterion as a row and columns
 #' \code{internalTaxonId}; \code{scientificName}; and \code{redlistCriteria}
 #' split into three levels.

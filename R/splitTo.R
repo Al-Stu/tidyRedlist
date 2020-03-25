@@ -73,3 +73,17 @@ splitToTidy <- function(columns,pattern,IDs,name){
   names(split_data) <- name
   return(split_data)
 }
+
+#' Selects element from \code{\link{stringr::str_split}} list
+#'
+#' @inheritParams stringr::str_split
+#' @param n the element you wish to keep, e.g. 1 to keep first element
+#' @return vector with \code{n}th position of each split string
+#' @examples
+#' strSplitSelect(species_data[['synonyms']])
+#' @section Used in: \code{\link{tidySynonyms}}
+strSplitSelect <- function(x,pattern,n){
+  result <- stringr::str_split(x,pattern = pattern) %>%
+    sapply(function(x) x[n])
+  return(result)
+}
