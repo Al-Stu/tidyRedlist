@@ -27,6 +27,9 @@ tidyBib <- function(species_data){
   }
   species_data[['references']] <- bibliography
   species_data[['reference_authors']] <- authors
+  species_data <- species_data %>%
+    speciesInTextRefs() %>%
+    matchRefs(max_distance = 1)
   return(species_data)
 }
 
@@ -210,7 +213,7 @@ journalName <- function(bibliography){
 #'
 SCImagoJournal <- function(bibliography){
   SCImago <- tidyRedlist::rankings
-  match <- fuzzyMatchPairs(bibliography$journal,SCImago$Title)
+  match <- fuzzyMatchPairs(bibliography$journal,SCImago$Title, partial = FALSE)
   SCImago_abbreviations <- dplyr::filter(SCImago, !is.na(`abbreviation`))
   match_abbrev <- fuzzyMatchPairs(x = tm::removePunctuation(bibliography$journal),
                                   y = SCImago_abbreviations$abbreviation,
@@ -253,21 +256,130 @@ createShortRef <- function(bibliography){
     } else if (length(temp_authors) > 2){
       bibliography$shortRef[i] <- paste(temp_authors[1],
                                         bibliography$year[i],
-                                        sep = ' <em>et al</em>. ')
+                                        sep = ' et al ')
     }
   }
   return(bibliography)
 }
 
-#' Finds the section(s) of a Redlist profile each bibliography entry is
-#' referenced in
-#' @return \code{species_data} with an extra tibble for bibliography authors and
-#' tidied bibliography entries
-#' @return bibliography with added column \code{shortRef}
-#' @examples
-#' creatShortRef(bibliography)
-#' @section Used in: \code{\link{journalName}}
+#' Finds the in text references for each text in each species' redlist profile
+#' @param species_data a tibble of data downloaded from an IUCN Redlist search
+#' and imported using \code{\link{importList}}
+#' @return \code{species_data} with an extra tibble \code{in_text}
+#' @section Used in: \code{\link{}}
 #'
-findSection <- function(species_data){
+speciesInTextRefs <- function(species_data){
+  references <- tidyr::tibble(internalTaxonId = character(),
+                              section = character(),
+                              inText = character())
+  for(i in 1:nrow(species_data[['assessments']])){
+    species_refs <- species_data[['references']] %>%
+      dplyr::filter(`internalTaxonId` == species_data[['assessments']]$internalTaxonId[i]) %>%
+      dplyr::select(`referenceId`,`shortRef`)
+    species_texts_tibble <- species_data[['assessments']] %>%
+      dplyr::filter(`internalTaxonId` == species_data[['assessments']]$internalTaxonId[i]) %>%
+      dplyr::select(`rationale`,`habitat`,`threats`,`population`,`range`,`conservationActions`)
+    species_texts <- species_texts_tibble %>%
+      as.matrix() %>%
+      t() %>%
+      as.vector()
+    for(j in 1:length(species_texts)){
+      temp_references <- tidyr::tibble(internalTaxonId = species_data[['assessments']]$internalTaxonId[i],
+                                       section = names(species_texts_tibble)[j],
+                                       inText = inTextRefs(species_texts[j]))
+      references <- dplyr::bind_rows(references, temp_references)
+    }
+  }
+  species_data[['in_text']] <- references
+  return(species_data)
+}
 
+#' returns in text references
+#'
+#' \code{inTextRefs} searches for in text references using the regex pattern
+#' '[(][^)]*[1-2][0-9][0-9][0-9][^(]*[)]'
+#'
+#' @param text the text to be searched for full text references
+#' @return \code{refs} a vector of the full text references in \code{text}
+#' @section Used in: \code{\link{}}
+#'
+inTextRefs <- function(text){
+    refs <- stringr::str_extract_all(string = text,
+                                     pattern = '[(][^)]*[1-2][0-9][0-9][0-9][a-z]?[)]') %>%
+      unlist() %>%
+      stringr::str_split(pattern = ',') %>%
+      unlist() %>%
+      gsub(pattern = '[(|)]', replacement = '') %>%
+      stringr::str_trim()
+  return(refs)
+}
+
+#' matches in text references with references from bibliography
+#'
+#' \code{matchRefs} uses \code{fuzzyMatchPairs} to find the best match for each
+#' in text reference created by \code{\link{speciesInTextRefs} and stored in
+#' \code{species_data} with in text references for the bibliography generated in
+#' \code{createShortRef}
+#'
+#' @param species_data a tibble of data downloaded from an IUCN Redlist search
+#' and imported using \code{\link{importList}}
+#' @param max_distance the maximum accespted standard levenschtien distance
+#' between an in text reference and its match
+#' @return \code{species_data} with two extra columns in \code{in_text}:
+#' \code{bestMatch} and \code{referenceId}
+#' @section Used in: \code{\link{}}
+#'
+matchRefs <- function(species_data, max_distance){
+  distances <- refDistances(species_data)
+  in_text <- dplyr::mutate(species_data[['in_text']],
+                                             inBib = NA,
+                                             bestMatch = NA,
+                                             referenceId = NA)
+  for(i in 1:nrow(distances)){
+    if(!is.na(distances$adist[i])){
+      if(distances$adist[i] <= max_distance){
+        in_text[i,c(4:6)] <- c(TRUE,
+                               distances$yName[i],
+                               species_data[['references']]$referenceId[distances$yPosition[i]])
+      } else {
+        in_text[i,4] <- FALSE
+      }
+    }
+  }
+  species_data[['in_text']] <- in_text
+  return(species_data)
+}
+
+#' fuzzy match references
+#' #' @param species_data a tibble of data downloaded from an IUCN Redlist search
+#' and imported using \code{\link{importList}}
+#' @return tibble with \code{internaltaxonId}, \code{xPosition}, \code{xName},
+#' \code{yPosition}, \code{yName} and \code{adist}
+#' @section Used in: \code{\link{matchRefs}}
+#
+refDistances <- function(species_data){
+  references <- list()
+  short_bib_refs <- list()
+  match <- list()
+  species_match <- tidyr::tibble(internalTaxonId = character(),
+                                 xPosition = numeric(),
+                                 xName = character(),
+                                 yPosition = numeric(),
+                                 yName = character(),
+                                 adist = numeric())
+  for(i in 1:nrow(species_data[['assessments']])){
+    internalTaxonId <- species_data[['assessments']]$internalTaxonId[i]
+    references[[i]] <- species_data[['in_text']][species_data[['in_text']]$internalTaxonId==internalTaxonId, ] %>%
+      dplyr::mutate(inText = `inText` %>%
+                      gsub(pattern = '[<][^<]+[>]', replacement = '')) %>%
+      .$inText %>%
+      gsub(pattern = '[!-/:-@\\[-`{-~]', replacement = '')
+    short_bib_refs[[i]] <- species_data[['references']]$shortRef[species_data[['references']]$internalTaxonId==internalTaxonId] %>%
+      gsub(pattern = '[<][^<]+[>]', replacement = '') %>%
+      gsub(pattern = '[!-/:-@\\[-`{-~]', replacement = '')
+    match[[i]] <- fuzzyMatchPairs(references[[i]], short_bib_refs[[i]], partial = FALSE) %>%
+      dplyr::mutate(internalTaxonId = as.character(internalTaxonId))
+    species_match <- dplyr::bind_rows(species_match,match[[i]])
+  }
+  return(species_match)
 }

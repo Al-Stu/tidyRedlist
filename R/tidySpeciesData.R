@@ -17,6 +17,9 @@ tidySpeciesData <- function(species_data){
     tidyAssessments() %>%
     tidyConcat() %>%
     tidyNames() %>%
+    tidyBib() %>%
+    taxonIdToChar() %>%
+    addTaxonId() %>%
     removeNA()
   return(species_data)
 }
