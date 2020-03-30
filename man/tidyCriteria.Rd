@@ -4,11 +4,11 @@
 \alias{tidyCriteria}
 \title{Formats \code{redlistCriteria} into tidy data}
 \usage{
-tidyCriteria(redCriteria)
+tidyCriteria(species_data)
 }
 \arguments{
-\item{redCriteria}{a tibble with \code{redlistCriteria}, \code{internalTaxonId}
-and \code{scientificName}.}
+\item{species_data}{a tibble of data downloaded from an IUCN Redlist search
+and imported using \code{\link{importList}}}
 }
 \value{
 Tibble with each species-criterion as a row and columns
@@ -19,7 +19,7 @@ split into three levels.
 Formats \code{redlistCriteria} into tidy data
 }
 \section{Used in}{
- \code{\link{tidySpeciesData}}
+ \code{\link{tidyConcat}}
 }
 
 \examples{

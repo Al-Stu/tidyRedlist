@@ -16,6 +16,7 @@
 #' @examples
 #' splitToColumns(species_data[['assessments']]$realms, '[|]')
 #' @section Used in: \code{\link{splitToTidy}}
+#' @export
 splitToColumns <- function(x,pattern){
   x <- as.matrix(x)
   split_x <- as.character(x) %>%
@@ -55,7 +56,7 @@ splitToColumns <- function(x,pattern){
 #' @examples
 #' splitToTidy(c(species_data[['assessments']]$realms, species_data[['assessments']]$system),
 #' c('[|]','[|]'), species_data[['assessments']]$internalTaxonId,c('realms','system'))
-#'
+#' @export
 splitToTidy <- function(columns,pattern,IDs,name){
   split_data <- list()
   for(i in 1:ncol(columns)){
@@ -82,6 +83,7 @@ splitToTidy <- function(columns,pattern,IDs,name){
 #' @examples
 #' strSplitSelect(species_data[['synonyms']])
 #' @section Used in: \code{\link{tidySynonyms}}
+#' @export
 strSplitSelect <- function(x,pattern,n){
   result <- stringr::str_split(x,pattern = pattern) %>%
     sapply(function(x) x[n])

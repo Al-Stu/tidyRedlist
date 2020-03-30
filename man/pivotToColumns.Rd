@@ -5,14 +5,14 @@
 \title{Pivots output of criteriaToColumns functions and associates criteria with their
 \code{scientificName} and \code{internalTaxonId}}
 \usage{
-pivotToColumns(redCriteria, splitCriteria)
+pivotToColumns(splitCriteria, redCriteria)
 }
 \arguments{
-\item{redCriteria}{a tibble with \code{redlistCriteria}, \code{internalTaxonId}
-and \code{scientificName}, same length as splitCriteria}
-
 \item{splitCriteria}{a tibble output by running a \code{criteriaToColumns()}
 or \code{criteriaToColumnsL2()} on \code{redCriteria$redlistCriteria}}
+
+\item{redCriteria}{a tibble with \code{redlistCriteria}, \code{internalTaxonId}
+and \code{scientificName}, same length as splitCriteria}
 }
 \value{
 tibble with columns \code{internalTaxonId}, \code{scientificName}

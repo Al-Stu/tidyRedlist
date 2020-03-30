@@ -12,6 +12,7 @@
 #' @examples
 #' tidyCriteria(species_data[['redlistCriteria']])
 #' @section Used in: \code{\link{tidyConcat}}
+#' @export
 tidyCriteria <- function(species_data){
   redCriteria <- species_data$redlistCriteria
   check_col_titles <- any(grepl('redlistCriteria',colnames(redCriteria))) &
@@ -52,7 +53,7 @@ tidyCriteria <- function(species_data){
 #' @examples
 #' criteriaToColumns(species_data[['redlistCriteria']]$redlistCriteria,'[+]','^.','[0-9].*$')
 #' @section Used in: \code{\link{tidyCriteria}}
-#'
+#' @export
 criteriaToColumns <- function(input,pattern,firstHalf,secondHalf){
   to_columns <- input %>%
     splitToColumns(pattern = pattern) %>%
@@ -70,7 +71,7 @@ criteriaToColumns <- function(input,pattern,firstHalf,secondHalf){
 #' @examples
 #' criteriaToColumnsL2(resultFromPivotToColumns$redlistCriteria)
 #' @section Used in: \code{\link{tidyCriteria}}
-#'
+#' @export
 criteriaToColumnsL2 <- function(input){
   split_bracket <- input %>%
     splitToColumns(pattern = '[(]') %>%
@@ -98,15 +99,8 @@ criteriaToColumnsL2 <- function(input){
 #' @examples
 #' criteriaToColumnsL2(resultFromPivotToColumns$redlistCriteria)
 #' @section Used in: \code{\link{tidyCriteria}}
-#'
-# pivotToColumns <- function(splitCriteria,redCriteria){
-#   dplyr::bind_cols(splitCriteria[,-ncol(splitCriteria)], redCriteria[,1]) %>%
-#     dplyr::mutate(internalTaxonId = as.character(internalTaxonId)) %>%
-#     tidyr::pivot_longer(-`internalTaxonId`, values_to = 'criterion') %>%
-#     dplyr::select(c(`internalTaxonId`, `criterion`)) %>%
-#     dplyr::filter(!is.na(`criterion`))
-# }
-#
+#' @export
+
 pivotToColumns <- function(splitCriteria,redCriteria){
   df <- dplyr::bind_cols(splitCriteria, redCriteria[,c(1,2)])
   v_columns <- grepl('V',colnames(df))
@@ -127,7 +121,7 @@ pivotToColumns <- function(splitCriteria,redCriteria){
 #' @return a tibble with the value in the last column of each row in front of
 #' each value in that row and last columns removed
 #' @section Used in: \code{\link{criteriaToColumns}}
-#'
+#' @export
 pasteLastToAll <- function(df){
   for(i in 1:(ncol(df)-1)){
     for(j in 1:nrow(df)){
@@ -145,7 +139,7 @@ pasteLastToAll <- function(df){
 #' @return a tibble with the value in the last column of each row in front of
 #' each value in that row and first column removed
 #' @section Used in: \code{\link{criteriaToColumnsL2}}
-#'
+#' @export
 pasteFirstToAll <- function(df){
   for(i in 2:(ncol(df))){
     for(j in 1:nrow(df)){

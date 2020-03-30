@@ -10,6 +10,7 @@
 #' @param fileType the intended export filetype e.g. 'csv'
 #' @examples
 #' exportList(speciesData,'/exported_files','species_data','csv')
+#' @export
 
 exportList <- function(list, directory, prefix, fileType){
   current_wd <- getwd()
@@ -37,6 +38,7 @@ exportList <- function(list, directory, prefix, fileType){
 #' @param fileType the filetype of files to be imported, '' if not all one type
 #' @examples
 #' importList('/exported_files','species_data','csv')
+#' @export
 
 importList <- function(directory, prefix, fileType){
   current_wd <- getwd()

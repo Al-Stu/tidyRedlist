@@ -11,7 +11,7 @@
 #' @examples
 #' tidyBib(species_data)
 #' @section Used in: \code{\link{tidySpeciesData}}
-#'
+#' @export
 tidyBib <- function(species_data){
   bibliography <- species_data[['references']] %>%
     dplyr::mutate(referenceId = paste('r', 1:nrow(.), sep = '')) %>%
@@ -42,7 +42,7 @@ tidyBib <- function(species_data){
 #' @examples
 #' tidyAuthors(bibliography)
 #' @section Used in: \code{\link{tidyBib}}
-#'
+#' @export
 tidyAuthors <- function(bibliography){
   authors <- bibliography %>%
     dplyr::select(`internalTaxonId`,
@@ -66,7 +66,7 @@ tidyAuthors <- function(bibliography){
 #' @examples
 #' tidyCitation(bibliography)
 #' @section Used in: \code{\link{tidyBib}}
-#'
+#' @export
 tidyCitation <- function(bibliography){
     citation <- dplyr::select(bibliography, `citation`)
     tidy_bib <- bibliography %>%
@@ -82,7 +82,7 @@ tidyCitation <- function(bibliography){
 #' @examples
 #' pageNumbers(bibliography)
 #' @section Used in: \code{\link{tidyCitation}}
-#'
+#' @export
 pageNumbers <- function(bibliography){
   pages <- bibliography %>%
     dplyr::select(`citation`) %>%
@@ -127,7 +127,7 @@ pageNumbers <- function(bibliography){
 #' @examples
 #' journal(bibliography)
 #' @section Used in: \code{\link{tidyCitation}}
-#'
+#' @export
 dateAccessed <- function(bibliography){
   accessed <- bibliography %>%
     dplyr::select(`citation`) %>%
@@ -156,7 +156,7 @@ dateAccessed <- function(bibliography){
 #' @examples
 #' journal(bibliography)
 #' @section Used in: \code{\link{tidyCitation}}
-#'
+#' @export
 volumeIssue <- function(bibliography){
   vol_iss <- bibliography %>%
     dplyr::select(`citation`) %>%
@@ -183,7 +183,7 @@ volumeIssue <- function(bibliography){
 #' @examples
 #' journal(bibliography)
 #' @section Used in: \code{\link{tidyCitation}}
-#'
+#' @export
 journalName <- function(bibliography){
   journal <- bibliography %>%
     dplyr::select(`citation`) %>%
@@ -210,7 +210,7 @@ journalName <- function(bibliography){
 #' @examples
 #' journal(bibliography)
 #' @section Used in: \code{\link{journalName}}
-#'
+#' @export
 SCImagoJournal <- function(bibliography){
   SCImago <- tidyRedlist::rankings
   match <- fuzzyMatchPairs(bibliography$journal,SCImago$Title, partial = FALSE)
@@ -239,7 +239,7 @@ SCImagoJournal <- function(bibliography){
 #' @examples
 #' creatShortRef(bibliography)
 #' @section Used in: \code{\link{journalName}}
-#'
+#' @export
 createShortRef <- function(bibliography){
   authors <- tidyAuthors(bibliography)
   bibliography <- dplyr::mutate(bibliography,
@@ -267,7 +267,7 @@ createShortRef <- function(bibliography){
 #' and imported using \code{\link{importList}}
 #' @return \code{species_data} with an extra tibble \code{in_text}
 #' @section Used in: \code{\link{}}
-#'
+#' @export
 speciesInTextRefs <- function(species_data){
   references <- tidyr::tibble(internalTaxonId = character(),
                               section = character(),
@@ -302,7 +302,7 @@ speciesInTextRefs <- function(species_data){
 #' @param text the text to be searched for full text references
 #' @return \code{refs} a vector of the full text references in \code{text}
 #' @section Used in: \code{\link{}}
-#'
+#' @export
 inTextRefs <- function(text){
     refs <- stringr::str_extract_all(string = text,
                                      pattern = '[(][^)]*[1-2][0-9][0-9][0-9][a-z]?[)]') %>%
@@ -328,7 +328,7 @@ inTextRefs <- function(text){
 #' @return \code{species_data} with two extra columns in \code{in_text}:
 #' \code{bestMatch} and \code{referenceId}
 #' @section Used in: \code{\link{}}
-#'
+#' @export
 matchRefs <- function(species_data, max_distance){
   distances <- refDistances(species_data)
   in_text <- dplyr::mutate(species_data[['in_text']],
@@ -356,7 +356,7 @@ matchRefs <- function(species_data, max_distance){
 #' @return tibble with \code{internaltaxonId}, \code{xPosition}, \code{xName},
 #' \code{yPosition}, \code{yName} and \code{adist}
 #' @section Used in: \code{\link{matchRefs}}
-#
+#' @export
 refDistances <- function(species_data){
   references <- list()
   short_bib_refs <- list()

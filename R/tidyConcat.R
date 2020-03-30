@@ -11,6 +11,7 @@
 #' @examples
 #' tidyConcat(species_data)
 #' @section Used in: \code{\link{tidySpeciesData}}
+#' @export
 tidyConcat <- function(species_data){
   internalTaxonId <- species_data[['assessments']]$internalTaxonId
   name <- c('systems','realm','redlistCriteria')
@@ -37,8 +38,8 @@ tidyConcat <- function(species_data){
 #' tidy data
 #' @examples
 #' tidyThreats(species_data)
-#' #' @section Used in: \code{\link{tidyConcat}}
-#'
+#' @section Used in: \code{\link{tidyConcat}}
+#' @export
 tidyThreats <- function(species_data){
   threats <- species_data %>%
     .[['threats']] %>%
@@ -62,8 +63,8 @@ tidyThreats <- function(species_data){
 #' per column
 #' @examples
 #' tidyCodes(species_data)
-#' #' @section Used in: \code{\link{tidyConcat}}
-#'
+#' @section Used in: \code{\link{tidyConcat}}
+#' @export
 tidyCodes <- function(species_data){
   inc_code <- species_data %>%
     sapply(colnames) %>%

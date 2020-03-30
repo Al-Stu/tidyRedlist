@@ -11,6 +11,7 @@
 #' @examples
 #' tidyNames(species_data)
 #' @section Used in: \code{\link{tidySpeciesData}}
+#' @export
 tidyNames <- function(species_data){
   common_names <- dplyr::select(species_data[['common_names']], `internalTaxonId`,
                                 `scientificName`, `name`, `language`,`main`)
@@ -42,6 +43,7 @@ tidyNames <- function(species_data){
 #' tidySynonyms(species_data)
 #' @section Used in: \code{\link{tidyNames}}
 #'
+#' @export
 tidySynonyms <- function(synonyms){
   cleanedSynonym <-  synonyms$name %>%
     strSplitSelect(',',1) %>%

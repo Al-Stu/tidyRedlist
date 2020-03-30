@@ -12,8 +12,6 @@ imported using \code{\link{importList}}}
 }
 \value{
 a list with species
-\code{internalTaxonId}; \code{scientificName}; and \code{redlistCriteria}
-split into three levels.
 }
 \description{
 Formats Redlist downloads into tidy data

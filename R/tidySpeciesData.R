@@ -9,7 +9,7 @@
 #' @return a list with species
 #' @examples
 #' tidyCriteria(species_data[['redlistCriteria']])
-
+#' @export
 tidySpeciesData <- function(species_data){
   species_data <- species_data %>%
     taxonIdToChar() %>%
@@ -39,6 +39,7 @@ tidySpeciesData <- function(species_data){
 #' split into three levels.
 #' @examples
 #' tidyCriteria(species_data[['redlistCriteria']])
+#' @export
 addTaxonId <- function(species_data){
     if(any(grepl('assessments',names(species_data)))){
     result <- sapply(species_data, function(x) dplyr::right_join(x,
@@ -59,6 +60,7 @@ addTaxonId <- function(species_data){
 #' have the same number of rows
 #' @return a dataframe with nrow = nrow(list[[1]]) and all columns from all
 #' elements of \code{list}
+#' @export
 joinAll <- function(list){
   result <- list[[1]]
   for(i in 2:length(list)){
@@ -76,6 +78,7 @@ joinAll <- function(list){
 #' @examples
 #' tidyAssessments(species_data)
 #' #' @section Used in: \code{\link{tidySpeciesData}}
+#' @export
 tidyAssessments <- function(species_data){
   collate_list <- species_data[as.vector(sapply(species_data,nrow))==
                                  nrow(species_data[['assessments']])]
@@ -92,6 +95,7 @@ tidyAssessments <- function(species_data){
 #' @examples
 #' taxonIdToChar(species_data)
 #' @section Used in: \code{\link{tidySpeciesData}}
+#' @export
 taxonIdToChar <- function(species_data){
   for(i in 1:length(species_data)){
     taxon_id <- grepl('internalTaxonId',colnames(species_data[[i]]))
@@ -111,6 +115,7 @@ taxonIdToChar <- function(species_data){
 #' @examples
 #' removeNA(species_data)
 #' @section Used in: \code{\link{tidySpeciesData}}
+#' @export
 removeNA <- function(species_data){
   list <- list()
     for(i in 1:length(species_data)){

@@ -10,7 +10,7 @@
 #' @examples
 #' tidyCredits(species_data)
 #' @section Used in: \code{\link{tidyConcat}}
-#'
+#' @export
 tidyCredits <- function(species_data){
   species_data[['credits']] <- species_data %>%
     addTaxonId() %>%
@@ -44,7 +44,7 @@ tidyCredits <- function(species_data){
 #' @examples
 #' tidyCredits(species_data)
 #' @section Used in: \code{\link{tidyCredits}}
-#'
+#' @export
 cleanFullName <- function(names){
   split_names <- stringr::str_split(string = names, pattern = ' ')
   last_names <- c()
@@ -69,7 +69,7 @@ cleanFullName <- function(names){
 #' @param names a vector of names to be cleaned
 #' @return a value containing initials with no spaces or punctuation between
 #' @section Used in: \code{\link{cleanFullName}}
-#'
+#' @export
 firstNameToInitials <- function(names){
   initials <- paste(names, collapse = ' ') %>%
     gsub(pattern = '[!-/:-@\\[-`{-~]', replacement = '') %>%

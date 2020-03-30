@@ -21,9 +21,8 @@
 #' \code{\link{adist}}
 #' @return tibble with columns: \code{xPosition}, \cpde{xName},\code{yPosition}, \code{yName}
 #' and \code{adist}
-#' @examples
 #' @section Used in: \code{\link{SCImagoJournal}}
-#'
+#' @export
 fuzzyMatchPairs <- function(x, y, partial){
   # create a matrix with the Standard Levenshtein distance between the name fields of both sources
   dist.name<-adist(x,y, partial = partial, ignore.case = TRUE)
@@ -45,6 +44,7 @@ fuzzyMatchPairs <- function(x, y, partial){
 }
 
 # FUZZYMATCHPOSITION
+#' @export
 fuzzymatchposition <- function(x,y){
   # create a matrix with the Standard Levenshtein distance between the name fields of both sources
   dist.name<-adist(x,y, partial = FALSE, ignore.case = TRUE)
