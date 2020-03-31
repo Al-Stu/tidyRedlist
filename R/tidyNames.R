@@ -14,22 +14,25 @@
 #' @export
 tidyNames <- function(species_data){
   common_names <- dplyr::select(species_data[['common_names']], `internalTaxonId`,
-                                `scientificName`, `name`, `language`,`main`)
-  species_data[['names']] <- species_data[['synonyms']] %>%
+                                `scientificName`, `name`, `language`,`main`) %>%
+    dplyr::mutate(source = 'RL')
+  synonyms <- species_data[['synonyms']] %>%
     tidySynonyms() %>%
     dplyr::mutate(language = 'scientific',
                   main = FALSE) %>%
     dplyr::bind_rows(common_names) %>%
     dplyr::mutate(source = 'RL')
-  species_data[['names']] <- species_data[['assessments']] %>%
+  sci_names <- species_data[['assessments']] %>%
     dplyr::distinct(`scientificName`,.keep_all = TRUE) %>%
     dplyr::transmute(internalTaxonId = `internalTaxonId`,
                      scientificName = `scientificName`,
                      name = `scientificName`,
                      language = 'scientific',
                      main = TRUE,
-                     source = 'RL') %>%
-    dplyr::bind_rows(species_data[['names']])
+                     source = 'RL')
+  species_data[['names']] <- dplyr::bind_rows(sci_names, synonyms, common_names) %>%
+    dplyr::arrange(`internalTaxonId`) %>%
+    unique()
   return(species_data)
 }
 
@@ -52,7 +55,8 @@ tidySynonyms <- function(synonyms){
     stringr::str_trim() %>%
     gsub(pattern = ' spp[.]| ssp[.]',replacement = '')
   result <- dplyr::transmute(synonyms,
-                     scientificName = `scientificName`,
-                     name = cleanedSynonym)
+                             internalTaxonId = `internalTaxonId`,
+                             scientificName = `scientificName`,
+                             name = cleanedSynonym)
   return(result)
 }

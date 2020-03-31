@@ -43,11 +43,19 @@ fuzzyMatchPairs <- function(x, y, partial){
   return(match.x.y)
 }
 
-# FUZZYMATCHPOSITION
-#' @export
+#' finds position of the best match for \code{x} in \code{y}
+#'
+#' @param x a character vector
+#' @param y a character vector
+#' @param partial a logical indicating whether the transformed x elements must exactly
+#' match the complete y elements, or only substrings of these. The latter corresponds
+#' to the approximate string distance used by \code{\link{agrep}} (by default).from
+#' \code{\link{adist}}
+#' @return ??
+#' @section Used in: \code{\link{SCImagoJournal}}
 fuzzymatchposition <- function(x,y){
   # create a matrix with the Standard Levenshtein distance between the name fields of both sources
-  dist.name<-adist(x,y, partial = FALSE, ignore.case = TRUE)
+  dist.name<-adist(x,y, partial = partial, ignore.case = TRUE)
 
   # find pairs with minimum distance
   min.name<-apply(dist.name, 1, min)
