@@ -57,6 +57,7 @@ tidySynonyms <- function(synonyms){
   result <- dplyr::transmute(synonyms,
                              internalTaxonId = `internalTaxonId`,
                              scientificName = `scientificName`,
-                             name = cleanedSynonym)
+                             name = cleanedSynonym) %>%
+    dplyr::filter(!is.na(`name`))
   return(result)
 }
